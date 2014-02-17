@@ -105,6 +105,7 @@ Sentence DocumentSerializer::loadSentence(istream &stream) {
 
     // Each line = a token in the sentence
     int offset = 0;
+    string nil(1, NIL);
     while (offset < tokenCount) {
         getline(stream, line);
         tokens = tokenize(line);
@@ -117,19 +118,19 @@ Sentence DocumentSerializer::loadSentence(istream &stream) {
         endOffsetBuffer.push_back(atoi(tokens.at(2).c_str()));
 
         tagBuffer.push_back(tokens.at(3));
-        if (tokens.at(3).compare(&NIL) != 0)
+        if (tokens.at(3).compare(nil) != 0)
             nilTags = false;
         lemmaBuffer.push_back(tokens.at(4));
-        if (tokens.at(4).compare(&NIL) != 0)
+        if (tokens.at(4).compare(nil) != 0)
             nilLemmas = false;
         entityBuffer.push_back(tokens.at(5));
-        if (tokens.at(5).compare(&NIL) != 0)
+        if (tokens.at(5).compare(nil) != 0)
             nilEntities = false;
         normBuffer.push_back(tokens.at(6));
-        if (tokens.at(6).compare(&NIL) != 0)
+        if (tokens.at(6).compare(nil) != 0)
             nilNorms = false;
         chunkBuffer.push_back(tokens.at(7));
-        if (tokens.at(7).compare(&NIL) != 0)
+        if (tokens.at(7).compare(nil) != 0)
             nilChunks = false;
 
         offset += 1;
@@ -152,18 +153,25 @@ Sentence DocumentSerializer::loadSentence(istream &stream) {
     do {
         getline(stream, line);
         tokens = tokenize(line);
+        if (tokens.size() == 0) continue;
         if (tokens.at(0).compare(START_DEPENDENCIES) == 0) {
+
             do { // Eat up dependencies
                 getline(stream, line);
                 tokens = tokenize(line);
-            } while (tokens.at(0).compare(END_OF_DEPENDENCIES) != 0);
+            } while (tokens.size() == 0 ||
+                    tokens.at(0).compare(END_OF_DEPENDENCIES) != 0);
+
         } else if (tokens.at(0).compare(START_CONSTITUENTS) == 0) {
+
             do { // Eat up constituents
                 getline(stream, line);
                 tokens = tokenize(line);
-            } while (tokens.at(0).compare(END_OF_SENTENCE) != 0);
+            } while (tokens.size() == 0 ||
+                    tokens.at(0).compare(END_OF_SENTENCE) != 0);
+
         }
-    } while (tokens.at(0).compare(END_OF_SENTENCE) != 0);
+    } while (tokens.size() == 0 || tokens.at(0).compare(END_OF_SENTENCE) != 0);
 
     // Now let's create a sentence and return it
     vector<string> empty;

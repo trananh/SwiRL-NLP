@@ -203,8 +203,9 @@ int main(int argc, char ** argv) {
 		exit(1);
 	}
 
-//	/* Process a single NLP annotation */
+	/* Process a single NLP annotation */
 //	string path = "/Users/trananh/Workspace/Data/text/corpora/Gigaword-chase-nlp/AFP_ENG_19940516.0024.txt";
+//	string path = "/Users/trananh/Workspace/Data/text/corpora/Gigaword-chase-nlp/AFP_ENG_19940530.0183.txt";
 //	processFile(path, cout);
 
 	/* Process an entire directory of NLP annotations */
