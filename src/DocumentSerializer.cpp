@@ -5,8 +5,8 @@
  *      Author: trananh
  */
 
-#include <assert.h>
 #include <sstream>
+#include <assert.h>
 
 #include "DocumentSerializer.h"
 
@@ -168,7 +168,8 @@ Sentence DocumentSerializer::loadSentence(istream &stream) {
     // Now let's create a sentence and return it
     vector<string> empty;
     Sentence sent(wordBuffer, startOffsetBuffer, endOffsetBuffer,
-            (nilTags) ? empty : tagBuffer, (nilLemmas) ? empty : lemmaBuffer,
+            (nilTags) ? empty : tagBuffer,
+            (nilLemmas) ? empty : lemmaBuffer,
             (nilEntities) ? empty : entityBuffer,
             (nilNorms) ? empty : normBuffer, (nilChunks) ? empty : chunkBuffer);
 

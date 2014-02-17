@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include <assert.h>
+
 using namespace std;
 
 namespace processors {
@@ -37,10 +39,11 @@ public:
     Sentence(const vector<string> & tokens, const vector<int> & startOff,
             const vector<int> & endOff, const vector<string> & pos,
             const vector<string> & lem, const vector<string> & en,
-            const vector<string> & normVals, const vector<string> & chunkLabels) :
-            words(tokens), startOffsets(startOff), endOffsets(endOff), tags(
-                    pos), lemmas(lem), entities(en), norms(normVals), chunks(
-                    chunkLabels) {
+            const vector<string> & normVals,
+            const vector<string> & chunkLabels) :
+            words(tokens), startOffsets(startOff), endOffsets(endOff),
+            tags(pos), lemmas(lem), entities(en), norms(normVals),
+            chunks(chunkLabels) {
     }
 
     // Public variables.
@@ -54,8 +57,8 @@ public:
     vector<string> chunks;
 
     // TODO: Future impelementation
-    // Tree syntacticTree;		/* Constituent tree of this sentence; includes head words */
-    // DAG dependencies;		/* DAG of syntactic dependencies; word offsets start at 0 */
+    // Tree syntacticTree;  /* Constituent tree of this sent; incl head words */
+    // DAG dependencies;    /* DAG of syntactic dependencies; offsets at 0 */
 
     /** Size of the sentence */
     int size() {
@@ -63,7 +66,7 @@ public:
     }
 
     /** Concatenated string tokens. */
-    string getSentenceText() {
+    string getTokenizedText() {
         string text = "";
         for (unsigned int i = 0; i < words.size(); i++) {
             text = text + words.at(i);
@@ -74,24 +77,40 @@ public:
         return text;
     }
 
-    /** Concatenated lemma tokens. */
-    string getLemmasAsText() {
+    /** Concatenated string tokens with POS tags. */
+    string getTokenizedTextWithTags() {
+        assert(words.size() == tags.size());
         string text = "";
-        for (unsigned int i = 0; i < lemmas.size(); i++) {
-            text = text + lemmas.at(i);
-            if (i < lemmas.size() - 1) {
+        for (unsigned int i = 0; i < words.size(); i++) {
+            text = text + words.at(i) + string(" ") + tags.at(i);
+            if (i < words.size() - 1) {
                 text = text + string(" ");
             }
         }
         return text;
     }
 
-    /** Concatenated POS tag tokens. */
-    string getTagsAsText() {
+    /** Concatenated string tokens with named entities. */
+    string getTokenizedTextWithEntities() {
+        assert(words.size() == entities.size());
         string text = "";
-        for (unsigned int i = 0; i < tags.size(); i++) {
-            text = text + tags.at(i);
-            if (i < tags.size() - 1) {
+        for (unsigned int i = 0; i < words.size(); i++) {
+            text = text + words.at(i) + string(" ") + entities.at(i);
+            if (i < words.size() - 1) {
+                text = text + string(" ");
+            }
+        }
+        return text;
+    }
+
+    /** Concatenated string tokens with POS tags & entities. */
+    string getTokenizedTextWithTagsEntities() {
+        assert(words.size() == tags.size() && words.size() == entities.size());
+        string text = "";
+        for (unsigned int i = 0; i < words.size(); i++) {
+            text = text + words.at(i) + string(" ") + tags.at(i)
+                    + string(" ") + entities.at(i);
+            if (i < words.size() - 1) {
                 text = text + string(" ");
             }
         }
@@ -112,9 +131,7 @@ public:
      * Constructor.
      * 	@param sentences Sentences from the document.
      */
-    Document(const vector<Sentence> & s) :
-            sentences(s) {
-    }
+    Document(const vector<Sentence> & s) : sentences(s) { }
 
     // Public variables
     vector<Sentence> sentences;
