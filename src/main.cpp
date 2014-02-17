@@ -73,62 +73,61 @@ string escapeQuotes(const string &before) {
  */
 void processFile(const string& filename, ostream& out = std::cout) {
     ifstream stream(filename.c_str());
-	// Always check to see if file opening succeeded
-	if (stream.is_open()) {
+    // Always check to see if file opening succeeded
+    if (stream.is_open()) {
 
-		// Load annotation
-		Document doc = DocumentSerializer::load(stream);
+        // Load annotation
+        Document doc = DocumentSerializer::load(stream);
 
-		// For each sentence, parse with swirl
-		TreePtr tree;
-		string text;
-		string swirlCode;
-		const char * line;
-		out << (int)doc.sentences.size() << " sentences."<< endl << endl;
-		for (int i = 0; i < (int)doc.sentences.size(); i++) {
+        // For each sentence, parse with swirl
+        TreePtr tree;
+        string text, swirlCode;
+        const char * line;
+        out << (int) doc.sentences.size() << " sentences." << endl << endl;
+        for (int i = 0; i < (int) doc.sentences.size(); i++) {
             // form the sentence text with the necessary POS and entities
             Sentence sentence = doc.sentences.at(i);
-		    if (sentence.entities.size() == sentence.words.size()) {
-		        if (sentence.tags.size() == sentence.words.size()) {
-	                text = sentence.getTokenizedTextWithTagsEntities();
-	                swirlCode = "1";
-		        } else {
+            if (sentence.entities.size() == sentence.words.size()) {
+                if (sentence.tags.size() == sentence.words.size()) {
+                    text = sentence.getTokenizedTextWithTagsEntities();
+                    swirlCode = "1";
+                } else {
                     text = sentence.getTokenizedTextWithEntities();
                     swirlCode = "2";
-		        }
-		    } else {
+                }
+            } else {
                 text = sentence.getTokenizedText();
                 swirlCode = "3";
-		    }
+            }
 
-		    // escape quotes and add swirl parse code
-		    text = escapeQuotes(text);
-            out << (int)sentence.words.size() << " tokens." << endl;
+            // escape quotes and add swirl parse code
+            text = escapeQuotes(text);
+            out << (int) sentence.words.size() << " tokens." << endl;
             out << text << endl << endl;
             text = swirlCode + string(" ") + text;
             line = text.c_str();
 
-		    // classify all predicates in this sentence
-		    tree = Swirl::parse(line);
+            // classify all predicates in this sentence
+            tree = Swirl::parse(line);
 
-		    // dump extended Treebank format
-		    if (tree != (const Tree *) NULL){
-		      tree->serialize(out);
-		      out << endl << endl;
-		    }
+            // dump extended Treebank format
+            if (tree != (const Tree *) NULL) {
+                tree->serialize(out);
+                out << endl << endl;
+            }
 
-		    // dump extended CoNLL format
-		    Swirl::serialize(tree, line, out);
-		}
+            // dump extended CoNLL format
+            Swirl::serialize(tree, line, out);
+        }
 
 		stream.close();
 
-	} else {
+    } else {
 
-		cerr << "Failed to find annotation file!\n";
-		exit(1);
+        cerr << "Failed to find annotation file!\n";
+        exit(1);
 
-	}
+    }
 }
 
 /**
@@ -139,8 +138,7 @@ void processFile(const string& filename, ostream& out = std::cout) {
  *  @param overwrite Overwrite all files in the output directory if True.
  *      Defaults to false.
  */
-void processBatch(const string& directory,
-        const string& outdir,
+void processBatch(const string& directory, const string& outdir,
         bool overwrite = false) {
 
     if (!exists(directory) || !exists(outdir)) {
@@ -193,15 +191,15 @@ int main(int argc, char ** argv) {
 
     /** TODO: Expose command line arguments & remove hardcoded values. **/
 
-	string swirl = "./model_swirl";
-	string charniak = "./model_charniak";
+    string swirl = "./model_swirl";
+    string charniak = "./model_charniak";
 
-	// Initialize Swirl
-	bool caseSensitive = true;
-	if (!Swirl::initialize(swirl.c_str(), charniak.c_str(), caseSensitive)) {
-		cerr << "Failed to initialize SRL system!\n";
-		exit(1);
-	}
+    // Initialize Swirl
+    bool caseSensitive = true;
+    if (!Swirl::initialize(swirl.c_str(), charniak.c_str(), caseSensitive)) {
+        cerr << "Failed to initialize SRL system!\n";
+        exit(1);
+    }
 
 	/* Process a single NLP annotation */
 //	string path = "/Users/trananh/Workspace/Data/text/corpora/Gigaword-chase-nlp/AFP_ENG_19940516.0024.txt";
@@ -213,5 +211,5 @@ int main(int argc, char ** argv) {
     string out = "/Users/trananh/Workspace/Data/text/corpora/Gigaword-chase-swirl/";
     processBatch(path, out);
 
-	return 0;
+    return 0;
 }

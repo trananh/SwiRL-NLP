@@ -1,3 +1,7 @@
+# SWIRL's installation
+SWIRLINC = /usr/local/include/swirl
+SWIRLLIB = /usr/local/lib
+
 # Project structure
 TARGET = bin/main
 SRCDIR = src
@@ -23,10 +27,10 @@ CC = g++
 CFLAGS = -g -Wall
 
 # Specify include directories
-IPATH = -I$(INCDIR) -I/usr/local/include/swirl
+IPATH = -I$(INCDIR) -I$(SWIRLINC)
 
 # Specify library paths
-LPATH = -L$(LIBDIR) -L/usr/local/lib -L$(WNHOME)/lib
+LPATH = -L$(LIBDIR) -L$(SWIRLLIB) -L$(WNHOME)/lib
 LIB = -lm -lwn -lswirlmain -lswirlcha -lswirlab
 
 # Build all target(s)
