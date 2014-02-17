@@ -67,7 +67,7 @@ and then using SwiRL to further parse the document for role labels. It shows
 how one can integrate the output of CoreNLP's POS & named entity taggers
 into the input for SwiRL.
 
-Alternatively, you can take a look at ```src/main.cpp```.
+Alternatively, you can take a look at ```src/demo.cpp```.
 
 ```C++
 #include <iostream>

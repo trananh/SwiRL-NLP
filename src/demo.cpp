@@ -1,5 +1,5 @@
 /*
- * main.cpp
+ * demo.cpp
  *
  *  Created on: Feb 14, 2014
  *      Author: trananh
@@ -67,7 +67,8 @@ string escapeQuotes(const string &before) {
 }
 
 /**
- * Swirl parse the NLP annotation from a single file.
+ * Use Swirl to parse the NLP annotation from a single file.
+ * Precondition: SwiRL must have been initialized.
  *  @param filename Path to file containing the NLP annotation.
  *  @param out The output stream to print role labels.
  */
@@ -85,7 +86,7 @@ void processFile(const string& filename, ostream& out = std::cout) {
         const char * line;
         out << (int) doc.sentences.size() << " sentences." << endl << endl;
         for (int i = 0; i < (int) doc.sentences.size(); i++) {
-            // form the sentence text with the necessary POS and entities
+            // Form the sentence text with the necessary tags
             Sentence sentence = doc.sentences.at(i);
             if (sentence.entities.size() == sentence.words.size()) {
                 if (sentence.tags.size() == sentence.words.size()) {
@@ -100,26 +101,27 @@ void processFile(const string& filename, ostream& out = std::cout) {
                 swirlCode = "3";
             }
 
-            // escape quotes and add swirl parse code
+            // Escape quotes and add swirl parse code
             text = escapeQuotes(text);
             out << (int) sentence.words.size() << " tokens." << endl;
             out << text << endl << endl;
             text = swirlCode + string(" ") + text;
             line = text.c_str();
 
-            // classify all predicates in this sentence
+            // Classify all predicates in this sentence
             tree = Swirl::parse(line);
 
-            // dump extended Treebank format
+            // Dump extended Treebank format
             if (tree != (const Tree *) NULL) {
                 tree->serialize(out);
                 out << endl << endl;
             }
 
-            // dump extended CoNLL format
+            // Dump extended CoNLL format
             Swirl::serialize(tree, line, out);
         }
 
+        // Close the stream
 		stream.close();
 
     } else {
@@ -133,6 +135,7 @@ void processFile(const string& filename, ostream& out = std::cout) {
 /**
  * Swirl parse all NLP annotations contained in the given directory.
  * All NLP annotations are expected to be stored in txt files.
+ * Precondition: SwiRL must have been initialized.
  *  @param directory The directory containing NLP annotation files.
  *  @param outdir The output directory.
  *  @param overwrite Overwrite all files in the output directory if True.
@@ -183,32 +186,41 @@ void processBatch(const string& directory, const string& outdir,
 }
 
 /**
- * Main entry point.
+ * Main entry point. A demo of how to use SwiRL to parse information
+ * from an NLP annotation.
  *  @param argc Number of arguments.
  *  @param argv Command line arguments.
  */
 int main(int argc, char ** argv) {
 
-    /** TODO: Expose command line arguments & remove hardcoded values. **/
+    /**
+     * TODO: Expose command line arguments & remove hardcoded values!
+     * For now, make sure you update the hardcoded paths below appropriately
+     * before running the demo.
+     */
 
+    /* IMPORTANT: UPDATE THESE PATHS!
+     * Paths to models.
+     */
     string swirl = "./model_swirl";
     string charniak = "./model_charniak";
 
-    // Initialize Swirl
+    /* IMPORTANT: UPDATE THESE PATHS!
+     * Path to the directory containing NLP annotation (in batch mode) files,
+     * and path to the output directory. One output file will be generated
+     * for each input annotation file.
+     */
+    string path = "/path/to/NLP-annotations";
+    string out = "/path/to/Swirl-output";
+
+    // Initialize SwiRL
     bool caseSensitive = true;
     if (!Swirl::initialize(swirl.c_str(), charniak.c_str(), caseSensitive)) {
         cerr << "Failed to initialize SRL system!\n";
         exit(1);
     }
 
-	/* Process a single NLP annotation */
-//	string path = "/Users/trananh/Workspace/Data/text/corpora/Gigaword-chase-nlp/AFP_ENG_19940516.0024.txt";
-//	string path = "/Users/trananh/Workspace/Data/text/corpora/Gigaword-chase-nlp/AFP_ENG_19940530.0183.txt";
-//	processFile(path, cout);
-
-	/* Process an entire directory of NLP annotations */
-    string path = "/Users/trananh/Workspace/Data/text/corpora/Gigaword-chase-nlp";
-    string out = "/Users/trananh/Workspace/Data/text/corpora/Gigaword-chase-swirl/";
+	// Process an entire directory of NLP annotations
     processBatch(path, out);
 
     return 0;

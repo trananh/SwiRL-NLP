@@ -3,7 +3,7 @@ SWIRLINC = /usr/local/include/swirl
 SWIRLLIB = /usr/local/lib
 
 # Project structure
-TARGET = bin/main
+TARGET = bin/demo
 SRCDIR = src
 BUILDDIR = build
 INCDIR = include
