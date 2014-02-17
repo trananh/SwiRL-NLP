@@ -32,7 +32,7 @@ $ echo $WNHOME
 
 Make sure SwiRL is installed.  Download, build, and install SwiRL from
 [here](http://www.surdeanu.info/mihai/swirl/).  Alternatively if you are
-developing in OSX, check out [SwiRL-OSX](https://github.com/trananh/SwiRL-OSX).
+developing in OSX, check out [SwiRL-OSX](http://trananh.github.io/SwiRL-OSX/).
 
 For common build errors, please refer to this
 [FAQ](http://www.surdeanu.info/mihai/swirl/faq.php).
@@ -42,7 +42,7 @@ For common build errors, please refer to this
 ## Compilation
 
 Before compiling, you may need to update the installation paths of SwiRL in the
-Makefile. By default, the include path for SwiRL is set at
+Makefile. By default, the include path for SwiRL points to
 ```/usr/local/include/swirl``` and the lib path is set to ```/usr/local/lib```.
 If you installed SwiRL to a different location, please update the variables at
 the top of the Makefile accordingly.
@@ -83,7 +83,7 @@ using namespace srl;
 
 int main(int argc, char ** argv) {
 
-    // Set these paths accordingly
+    // IMPORTANT: Set these paths accordingly
     string swirl = "./model_swirl";
     string charniak = "./model_charniak";
     string filename = "/path/to/nlp-annotation.txt";
@@ -154,5 +154,6 @@ int main(int argc, char ** argv) {
 
 ## Compatibility
 
-- **[02/2014]** The code was tested to work with SwiRL-OSX (based on
-swirl-1.1.0), WordNet 3.0, and edu.arizona.sista.processors v2.0.
+- **[02/2014]** The code was tested to work with
+[SwiRL-OSX](http://trananh.github.io/SwiRL-OSX/) (based on
+swirl-1.1.0), [WordNet](http://wordnet.princeton.edu/) 3.0, and [edu.arizona.sista.processors](https://github.com/sistanlp/processors) 2.0.
