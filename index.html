@@ -1,0 +1,208 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>SwiRL-NLP by trananh</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">SwiRL-NLP</h1>
+        <p class="header">C++ interface between SISTA&#39;s CoreNLP processors and SwiRL.</p>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/trananh/SwiRL-NLP/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/trananh/SwiRL-NLP/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/trananh/SwiRL-NLP">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/trananh">trananh</a></p>
+
+
+      </header>
+      <section>
+        <h1>
+<a name="swirl-nlp" class="anchor" href="#swirl-nlp"><span class="octicon octicon-link"></span></a>SwiRL-NLP</h1>
+
+<p>This project provides C++ integration between Mihai Surdeanu's SISTA CoreNLP
+<a href="https://github.com/sistanlp/processors">processors</a> (written in Scala)
+and his <a href="http://www.surdeanu.info/mihai/swirl/index.php">SwiRL</a> system
+(written in C++).</p>
+
+<p>The code supplies seamless serialization &amp; deserialization of SISTA's CoreNLP
+documents in C++. This allows us to use SwiRL to add semantic role labels to a
+document previously annotated with CoreNLP, which has the advantage of using
+CoreNLP's POS tagger and named-entity engine to bootstrap SwiRL.</p>
+
+<h2>
+<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h2>
+
+<p><strong>WordNet</strong></p>
+
+<p>Make sure you have WordNet installed and the environment variable $WNHOME is
+set to the root of the installation directory.  You can download and install
+WordNet from <a href="http://wordnet.princeton.edu/">here</a>, then set $WNHOME
+accordingly. See example below.</p>
+
+<pre><code>$ # If you installed wordnet to /usr/local/WordNet-3.0/
+$ export WNHOME='/usr/local/WordNet-3.0/'
+$ echo $WNHOME
+/usr/local/WordNet-3.0/
+</code></pre>
+
+<p><strong>SwiRL</strong></p>
+
+<p>Make sure SwiRL is installed.  Download, build, and install SwiRL from
+<a href="http://www.surdeanu.info/mihai/swirl/">here</a>.  Alternatively if you are
+developing in OSX, check out <a href="http://trananh.github.io/SwiRL-OSX/">SwiRL-OSX</a>.</p>
+
+<p>For common build errors, please refer to this
+<a href="http://www.surdeanu.info/mihai/swirl/faq.php">FAQ</a>.</p>
+
+<h2>
+<a name="compilation" class="anchor" href="#compilation"><span class="octicon octicon-link"></span></a>Compilation</h2>
+
+<p>Before compiling, you may need to update the installation paths of SwiRL in the
+Makefile. By default, the include path for SwiRL points to
+<code>/usr/local/include/swirl</code> and the lib path is set to <code>/usr/local/lib</code>.
+If you installed SwiRL to a different location, please update the variables at
+the top of the Makefile accordingly.</p>
+
+<pre><code># SWIRL's installation
+SWIRLINC = /usr/local/include/swirl
+SWIRLLIB = /usr/local/lib
+</code></pre>
+
+<p>Once all the paths are resolved. The usual make will compile the project.</p>
+
+<pre><code>$ cd /path/to/SwiRL-NLP
+$ make
+</code></pre>
+
+<h2>
+<a name="code-example" class="anchor" href="#code-example"><span class="octicon octicon-link"></span></a>Code Example</h2>
+
+<p>The following snippet demonstrates how to read CoreNLP annotation from file, 
+and then using SwiRL to further parse the document for role labels. It shows
+how one can integrate the output of CoreNLP's POS &amp; named entity taggers
+into the input for SwiRL.</p>
+
+<p>Alternatively, you can take a look at <code>src/demo.cpp</code>.</p>
+
+<div class="highlight highlight-C++"><pre><span class="cp">#include &lt;iostream&gt;</span>
+<span class="cp">#include &lt;fstream&gt;</span>
+<span class="cp">#include &lt;string&gt;</span>
+
+<span class="cp">#include &lt;Swirl.h&gt;</span>
+<span class="cp">#include "DocumentSerializer.h"</span>
+
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">processors</span><span class="p">;</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">srl</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="c1">// IMPORTANT: Set these paths accordingly</span>
+    <span class="n">string</span> <span class="n">swirl</span> <span class="o">=</span> <span class="s">"./model_swirl"</span><span class="p">;</span>
+    <span class="n">string</span> <span class="n">charniak</span> <span class="o">=</span> <span class="s">"./model_charniak"</span><span class="p">;</span>
+    <span class="n">string</span> <span class="n">filename</span> <span class="o">=</span> <span class="s">"/path/to/nlp-annotation.txt"</span><span class="p">;</span>
+
+    <span class="c1">// Initialize Swirl</span>
+    <span class="kt">bool</span> <span class="n">caseSensitive</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">Swirl</span><span class="o">::</span><span class="n">initialize</span><span class="p">(</span><span class="n">swirl</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="n">charniak</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="n">caseSensitive</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">"Failed to initialize SRL system!</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Open NLP annotation</span>
+    <span class="n">ifstream</span> <span class="n">stream</span><span class="p">(</span><span class="n">filename</span><span class="p">.</span><span class="n">c_str</span><span class="p">());</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">stream</span><span class="p">.</span><span class="n">is_open</span><span class="p">())</span> <span class="p">{</span>
+
+        <span class="c1">// Load annotation</span>
+        <span class="n">Document</span> <span class="n">doc</span> <span class="o">=</span> <span class="n">DocumentSerializer</span><span class="o">::</span><span class="n">load</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+
+        <span class="c1">// For each sentence, parse with swirl</span>
+        <span class="n">TreePtr</span> <span class="n">tree</span><span class="p">;</span>
+        <span class="n">string</span> <span class="n">text</span><span class="p">,</span> <span class="n">swirlCode</span><span class="p">;</span>
+        <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span> <span class="n">line</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span> <span class="n">doc</span><span class="p">.</span><span class="n">sentences</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// form the sentence text with the necessary POS and entities</span>
+            <span class="n">Sentence</span> <span class="n">sentence</span> <span class="o">=</span> <span class="n">doc</span><span class="p">.</span><span class="n">sentences</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">sentence</span><span class="p">.</span><span class="n">entities</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">==</span> <span class="n">sentence</span><span class="p">.</span><span class="n">words</span><span class="p">.</span><span class="n">size</span><span class="p">())</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">sentence</span><span class="p">.</span><span class="n">tags</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">==</span> <span class="n">sentence</span><span class="p">.</span><span class="n">words</span><span class="p">.</span><span class="n">size</span><span class="p">())</span> <span class="p">{</span>
+                    <span class="n">text</span> <span class="o">=</span> <span class="n">sentence</span><span class="p">.</span><span class="n">getTokenizedTextWithTagsEntities</span><span class="p">();</span>
+                    <span class="n">swirlCode</span> <span class="o">=</span> <span class="s">"1"</span><span class="p">;</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="n">text</span> <span class="o">=</span> <span class="n">sentence</span><span class="p">.</span><span class="n">getTokenizedTextWithEntities</span><span class="p">();</span>
+                    <span class="n">swirlCode</span> <span class="o">=</span> <span class="s">"2"</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">sentence</span><span class="p">.</span><span class="n">getTokenizedText</span><span class="p">();</span>
+                <span class="n">swirlCode</span> <span class="o">=</span> <span class="s">"3"</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">text</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">swirlCode</span> <span class="o">+</span> <span class="n">string</span><span class="p">(</span><span class="s">" "</span><span class="p">)</span> <span class="o">+</span> <span class="n">text</span><span class="p">;</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">text</span><span class="p">.</span><span class="n">c_str</span><span class="p">();</span>
+
+            <span class="c1">// classify all predicates in this sentence</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">Swirl</span><span class="o">::</span><span class="n">parse</span><span class="p">(</span><span class="n">line</span><span class="p">);</span>
+
+            <span class="c1">// dump extended Treebank format</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">tree</span> <span class="o">!=</span> <span class="p">(</span><span class="k">const</span> <span class="n">Tree</span> <span class="o">*</span><span class="p">)</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">tree</span><span class="o">-&gt;</span><span class="n">serialize</span><span class="p">(</span><span class="n">cout</span><span class="p">);</span>
+                <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="c1">// dump extended CoNLL format</span>
+            <span class="n">Swirl</span><span class="o">::</span><span class="n">serialize</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">cout</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="n">stream</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">"Failed to find annotation file!</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span> 
+
+</pre></div>
+
+<h2>
+<a name="compatibility" class="anchor" href="#compatibility"><span class="octicon octicon-link"></span></a>Compatibility</h2>
+
+<ul>
+<li>
+<strong>[02/2014]</strong> The code was tested to work with
+<a href="http://trananh.github.io/SwiRL-OSX/">SwiRL-OSX</a> (based on
+swirl-1.1.0), <a href="http://wordnet.princeton.edu/">WordNet</a> 3.0, and <a href="https://github.com/sistanlp/processors">edu.arizona.sista.processors</a> 2.0.</li>
+</ul>
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		          <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-48101157-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
